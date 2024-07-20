@@ -6,22 +6,35 @@ import { UpdateArticleDto } from './dto/update-article.dto';
 
 @Injectable()
 export class ArticlesService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prismaService: PrismaService) { }
 
   create(createArticleDto: CreateArticleDto) {
-    return this.prisma.article.create({ data: createArticleDto })
+    return this.prismaService.article.create({ data: createArticleDto })
   }
 
   findAll() {
-    return this.prisma.article.findMany();
+    return this.prismaService.article.findMany({
+      include: {
+        author: true
+      }
+    });
   }
 
   findAllDrafts() {
-    return this.prisma.article.findMany({ where: { published: false } });
+    return this.prismaService.article.findMany({
+      where: { published: false, }, include: {
+        author: true
+      }
+    });
   }
 
   async findOne(id: number) {
-    const article = await this.prisma.article.findUnique({ where: { id } });
+    const article = await this.prismaService.article.findUnique({
+      where: { id },
+      include: {
+        author: true
+      }
+    });
     if (!article) {
       throw new NotFoundException(`Article with id ${id} does not exist.`);
     }
@@ -29,10 +42,10 @@ export class ArticlesService {
   }
 
   async update(id: number, updateArticleDto: UpdateArticleDto) {
-    return this.prisma.article.update({ where: { id }, data: updateArticleDto });
+    return this.prismaService.article.update({ where: { id }, data: updateArticleDto });
   }
 
   async remove(id: number) {
-    return this.prisma.article.delete({ where: { id } });
+    return this.prismaService.article.delete({ where: { id } });
   }
 }
